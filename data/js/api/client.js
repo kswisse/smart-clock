@@ -59,12 +59,12 @@ class ApiClient {
   }
 
   _invalidateRelated(endpoint) {
-    if (endpoint.startsWith('/api/todo')) cacheInvalidate('/api/status');
-    if (endpoint.startsWith('/api/alarm')) cacheInvalidate('/api/status');
-    if (endpoint.startsWith('/api/schedule')) cacheInvalidate('/api/status');
+    if (endpoint.startsWith('/api/todo')) { cacheInvalidate('/api/status'); cacheInvalidate('/api/todo'); }
+    if (endpoint.startsWith('/api/alarm')) { cacheInvalidate('/api/status'); cacheInvalidate('/api/alarm'); }
+    if (endpoint.startsWith('/api/schedule')) { cacheInvalidate('/api/status'); cacheInvalidate('/api/schedule'); }
     if (endpoint.startsWith('/api/time')) cacheInvalidate('/api/status');
-    if (endpoint.startsWith('/api/display')) cacheInvalidate('/api/status');
-    if (endpoint.startsWith('/api/sound')) cacheInvalidate('/api/status');
+    if (endpoint.startsWith('/api/display')) { cacheInvalidate('/api/status'); cacheInvalidate('/api/display'); }
+    if (endpoint.startsWith('/api/sound')) { cacheInvalidate('/api/status'); cacheInvalidate('/api/sound'); }
     if (endpoint.startsWith('/api/wifi')) cacheInvalidate('/api/status');
   }
 

@@ -109,7 +109,7 @@ function openEditModal(todo = null) {
   const modal = showModal({
     title: isEdit ? 'Edit Todo' : 'Add Todo',
     content: form,
-    onClose: async () => {
+    onSave: async () => {
       if (!titleVal.trim()) return;
       try {
         if (isEdit) {
@@ -121,7 +121,8 @@ function openEditModal(todo = null) {
       } catch (e) {
         showToast('Failed to save', 'error');
       }
-    }
+    },
+    onCancel: () => {}
   });
 }
 
@@ -140,13 +141,15 @@ function render() {
     todos.forEach(t => list.appendChild(renderTodoItem(t)));
   }
 
-  searchInput = el('input', {
-    class: 'input',
-    type: 'search',
-    placeholder: 'Search todos...',
-    value: searchTerm,
-    onInput: debounce((v) => { searchTerm = v; render(); }, 200)
-  });
+  if (!searchInput) {
+    searchInput = el('input', {
+      class: 'input',
+      type: 'search',
+      placeholder: 'Search todos...',
+      onInput: debounce((e) => { searchTerm = e.target.value; render(); }, 200)
+    });
+  }
+  searchInput.value = searchTerm;
 
   const fab = el('button', {
     class: 'fab',
@@ -178,6 +181,7 @@ function destroy() {
   unsubscribers.forEach(unsub => unsub());
   unsubscribers = [];
   container = null;
+  searchInput = null;
   searchTerm = '';
 }
 

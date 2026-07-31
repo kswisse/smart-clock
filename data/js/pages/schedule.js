@@ -92,7 +92,7 @@ function openAddModal() {
   showModal({
     title: 'Add Schedule Entry',
     content: form,
-    onClose: async () => {
+    onSave: async () => {
       if (!title.trim()) return;
       try {
         await scheduleApi.create({ day: currentDay, start, end, title: title.trim(), color });
@@ -100,7 +100,8 @@ function openAddModal() {
       } catch (e) {
         showToast('Failed to add entry', 'error');
       }
-    }
+    },
+    onCancel: () => {}
   });
 }
 

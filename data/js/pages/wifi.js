@@ -44,14 +44,15 @@ function openConnectModal(ssid) {
       el('p', { class: 'text-sm text-muted mb-md', text: `Connecting to: ${ssid}` }),
       passInput
     ]),
-    onClose: async () => {
+    onSave: async () => {
       try {
         await wifiApi.connect(ssid, password);
         showToast(`Connected to ${ssid}`, 'success');
       } catch (e) {
         showToast('Connection failed: ' + e.message, 'error');
       }
-    }
+    },
+    onCancel: () => {}
   });
 }
 

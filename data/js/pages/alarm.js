@@ -116,14 +116,15 @@ function openAddModal() {
   showModal({
     title: 'Add Alarm',
     content: form,
-    onClose: async () => {
+    onSave: async () => {
       try {
         await alarmApi.create({ hour, minute, repeat, sound, volume });
         showToast('Alarm added', 'success');
       } catch (e) {
         showToast('Failed to add alarm', 'error');
       }
-    }
+    },
+    onCancel: () => {}
   });
 }
 
