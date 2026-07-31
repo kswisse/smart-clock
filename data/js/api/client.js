@@ -1,6 +1,7 @@
 import { CONFIG } from '../core/config.js';
 import { store } from '../core/store.js';
 import { cacheGet, cacheSet, cacheInvalidate } from '../state/cache.js';
+import { demoApi } from './demo.js';
 
 class ApiClient {
   constructor() {
@@ -9,6 +10,16 @@ class ApiClient {
   }
 
   async request(method, endpoint, body = null, cacheTTL = 0, useCache = true) {
+    if (demoApi.isDemoMode()) {
+      const result = await demoApi.request(method, endpoint, body);
+      if (method !== 'GET') {
+        cacheInvalidate(endpoint);
+        this._invalidateRelated(endpoint);
+      }
+      store.set('online', true);
+      return result;
+    }
+
     if (useCache && method === 'GET' && cacheTTL > 0) {
       const cached = cacheGet(endpoint);
       if (cached !== null) return cached;

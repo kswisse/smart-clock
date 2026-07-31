@@ -1,4 +1,5 @@
 export const CONFIG = {
+  MODE: 'demo', // 'demo' or 'esp32'
   API_BASE: '',
   API_TIMEOUT: 5000,
   API_RETRY: 1,

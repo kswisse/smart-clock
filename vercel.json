@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "pifkid-smart-clock",
+  "outputDirectory": "data",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/index.html" }
+  ]
+}
