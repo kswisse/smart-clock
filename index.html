@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PIFKID 2026 Smart Clock</title>
+<style>
+:root{--bg:#0c0f1a;--surface:#151929;--card:#1a1f33;--border:#252b45;--text:#e8eaf0;--text2:#8b90a8;--accent:#22d3ee;--accent2:#0891b2;--green:#22c55e;--red:#ef4444;--radius:12px}
+*,::after,::before{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen,Ubuntu,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.container{width:100%;max-width:480px}
+.header{text-align:center;padding:20px 0 16px}
+.header h1{font-size:20px;font-weight:700;letter-spacing:-.3px}
+.status{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;background:var(--card);border:1px solid var(--border)}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.status-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.status-dot.off{background:var(--red);box-shadow:0 0 8px var(--red)}
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--radius);padding:4px;margin:12px 0 16px}
+.tab{flex:1;text-align:center;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;color:var(--text2);border:none;background:0 0}
+.tab.active{background:var(--accent);color:#0c0f1a}
+.tab:hover:not(.active){background:var(--card);color:var(--text)}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.label{font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text2)}
+input[type=time]{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:15px;outline:0;transition:.2s}
+input[type=time]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+.switch-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+.switch{position:relative;width:44px;height:24px;background:var(--border);border-radius:12px;cursor:pointer;transition:.3s;border:none;flex-shrink:0}
+.switch.on{background:var(--accent)}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.3s}
+.switch.on::after{left:22px}
+.btn{width:100%;padding:11px;border-radius:8px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;text-transform:uppercase;letter-spacing:.5px}
+.btn-primary{background:var(--accent);color:#0c0f1a}
+.btn-primary:hover{background:var(--accent2);color:#fff}
+.btn-primary:active{transform:scale(.97)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--red);padding:6px 12px;font-size:12px;width:auto;text-transform:none;letter-spacing:0}
+.btn-danger:hover{background:rgba(239,68,68,.25)}
+.btn-add{background:var(--surface);color:var(--accent);border:1px dashed var(--border);width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-add:hover{background:var(--border);border-color:var(--accent)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:.3s;pointer-events:none;max-width:400px;text-align:center}
+.toast.show{opacity:1}
+.toast.success{background:rgba(34,197,94,.2);color:var(--green);border:1px solid var(--green)}
+.toast.error{background:rgba(239,68,68,.2);color:var(--red);border:1px solid var(--red)}
+.sched-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.sched-item:last-child{margin-bottom:0}
+.sched-item input[type=time]{flex:0 0 110px;padding:8px 10px;font-size:13px}
+.sched-item input[type=text]{flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;outline:0;transition:.2s}
+.sched-item input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(34,211,238,.15)}
+.loading{text-align:center;padding:30px;color:var(--text2);font-size:13px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.loading-dot{display:inline-block;animation:pulse 1s infinite}
+.msg{padding:20px;text-align:center;border-radius:8px;background:var(--surface);color:var(--text2);font-size:13px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>PIFKID 2026 Smart Clock</h1>
+    <div class="status"><span class="status-dot off" id="statusDot"></span><span id="statusText">Đang kết nối...</span></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="alarm">Báo thức</button>
+    <button class="tab" data-tab="schedule">Thời khóa biểu</button>
+  </div>
+
+  <div class="panel active" id="panelAlarm">
+    <div class="card">
+      <div class="card-title">Cài đặt báo thức</div>
+      <div class="field">
+        <div class="label">Giờ báo thức</div>
+        <input type="time" id="alarmTime" value="06:30">
+      </div>
+      <div class="field switch-row">
+        <span class="label" style="margin:0">Bật báo thức</span>
+        <button class="switch on" id="alarmEnabled" role="switch" aria-checked="true"></button>
+      </div>
+      <button class="btn btn-primary" id="saveAlarm">Lưu báo thức</button>
+    </div>
+  </div>
+
+  <div class="panel" id="panelSchedule">
+    <div class="card">
+      <div class="card-title">Thời khóa biểu</div>
+      <div id="schedList"></div>
+      <button class="btn btn-add" id="addSched">+ Thêm mục mới</button>
+      <button class="btn btn-primary" style="margin-top:12px" id="saveSched">Lưu thời khóa biểu</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const API = ''; // set base URL if needed, e.g. 'http://192.168.4.1'
+
+let state = { alarm: { time: '06:30', enabled: true }, schedule: [] };
+
+function $(id) { return document.getElementById(id) }
+
+// Toast
+function showToast(msg, type) {
+  const t = $('toast');
+  t.textContent = msg; t.className = 'toast ' + type + ' show';
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Fetch helper
+async function api(method, path, body) {
+  try {
+    const opts = { method, headers: { 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch((API || '') + path, opts);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.json();
+  } catch (e) {
+    showToast('Lỗi: ' + e.message, 'error');
+    throw e;
+  }
+}
+
+// Update connection status
+async function checkStatus() {
+  const dot = $('statusDot'), txt = $('statusText');
+  try {
+    const r = await fetch((API || '') + '/api/data', { method: 'HEAD', cache: 'no-store' });
+    dot.className = 'status-dot on'; txt.textContent = 'Connected';
+  } catch {
+    dot.className = 'status-dot off'; txt.textContent = 'Disconnected';
+  }
+}
+setInterval(checkStatus, 10000);
+
+// Load data from ESP32
+async function loadData() {
+  const list = $('schedList');
+  list.innerHTML = '<div class="loading"><span class="loading-dot">●</span> Đang tải...</div>';
+  try {
+    const data = await api('GET', '/api/data');
+    state.alarm.time = data.alarm_time || '06:30';
+    state.alarm.enabled = data.alarm_enabled !== undefined ? data.alarm_enabled : true;
+    state.schedule = Array.isArray(data.schedule) ? data.schedule : [];
+    renderAlarm(); renderSchedule();
+    checkStatus();
+  } catch {
+    list.innerHTML = '<div class="msg">Không thể tải dữ liệu từ thiết bị. Kiểm tra kết nối.</div>';
+    renderAlarm(); renderSchedule();
+  }
+}
+
+// Alarm
+function renderAlarm() {
+  $('alarmTime').value = state.alarm.time;
+  const sw = $('alarmEnabled');
+  sw.classList.toggle('on', state.alarm.enabled);
+  sw.setAttribute('aria-checked', state.alarm.enabled);
+}
+$('alarmEnabled').onclick = function() {
+  state.alarm.enabled = !state.alarm.enabled;
+  this.classList.toggle('on'); this.setAttribute('aria-checked', state.alarm.enabled);
+};
+$('saveAlarm').onclick = async function() {
+  this.textContent = 'Đang lưu...'; this.disabled = true;
+  try {
+    const val = $('alarmTime').value;
+    state.alarm.time = val;
+    await api('POST', '/api/alarm', { alarm_time: val, enabled: state.alarm.enabled });
+    showToast('Đã lưu báo thức!', 'success');
+  } catch {}
+  this.textContent = 'Lưu báo thức'; this.disabled = false;
+};
+
+// Schedule
+function renderSchedule() {
+  const list = $('schedList');
+  if (!state.schedule.length) {
+    list.innerHTML = '<div class="msg">Chưa có mục nào. Thêm mới bên dưới.</div>';
+    return;
+  }
+  list.innerHTML = state.schedule.map((item, i) =>
+    '<div class="sched-item">' +
+    '<input type="time" value="' + item.time + '" data-i="' + i + '" onchange="updateSchedTime(' + i + ',this.value)">' +
+    '<input type="text" value="' + item.task.replace(/"/g,'&quot;') + '" placeholder="Công việc" data-i="' + i + '" oninput="state.schedule[' + i + '].task=this.value">' +
+    '<button class="btn btn-danger" onclick="removeSched(' + i + ')">Xóa</button>' +
+    '</div>'
+  ).join('');
+}
+function updateSchedTime(i, val) { state.schedule[i].time = val }
+function removeSched(i) { state.schedule.splice(i, 1); renderSchedule() }
+$('addSched').onclick = function() {
+  state.schedule.push({ time: '08:00', task: '' });
+  renderSchedule();
+  setTimeout(() => {
+    const items = $('schedList').querySelectorAll('.sched-item');
+    if (items.length) items[items.length - 1].querySelector('input[type=text]').focus();
+  }, 50);
+};
+$('saveSched').onclick = async function() {
+  this.textContent = 'Đang lưu...'; this.disabled = true;
+  try {
+    const arr = state.schedule.filter(s => s.task.trim());
+    await api('POST', '/api/schedule', arr);
+    showToast('Đã lưu thời khóa biểu!', 'success');
+  } catch {}
+  this.textContent = 'Lưu thời khóa biểu'; this.disabled = false;
+};
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    $('panel' + this.dataset.tab.charAt(0).toUpperCase() + this.dataset.tab.slice(1)).classList.add('active');
+  };
+});
+
+// Init
+loadData();
+</script>
+</body>
+</html>

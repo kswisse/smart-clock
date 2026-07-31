@@ -1,0 +1,77 @@
+# ── Build Outputs ──────────────────────────────────────────────
+build/
+.pio/
+.pioenvs/
+.piolibdeps/
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+
+# ── IDE / Editor ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.cproject
+.settings/
+
+# ── OS Files ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# ── Python ────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# ── Node.js ───────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Temporary / Generated ────────────────────────────────────
+*.tmp
+*.bak
+*.orig
+output.txt
+sim_output.txt
+sim_output_full.txt
+stderr.txt
+stdout.txt
+
+# ── PlatformIO Specific ──────────────────────────────────────
+firmware/.pio/
+firmware/.vscode/
+firmware/.superpowers/
+
+# ── Simulation Runtime ───────────────────────────────────────
+firmware/sim_fs/
+
+# ── Caches ───────────────────────────────────────────────────
+.cache/
+.next/
+.nuxt/
+dist/
+*.cache
+
+# ── Unrelated Sub-Projects ───────────────────────────────────
+# These are independent projects not part of PIFKID
+core/
+experiments/
+repo/
+archive/
+
+# ── Root-level leftovers ─────────────────────────────────────
+# Keep only PIFKID-related files at root
