@@ -94,6 +94,65 @@
 | P7 | Brightness auto-dimming | Medium | +1KB | +1KB | None |
 | P7 | Deep sleep mode | High | +5KB | +2KB | -99% power |
 
+### Phase 10: Weather Integration (Design Note Only — No Code Yet)
+
+**Status:** Design placeholder — DO NOT implement until MVP is validated.
+
+#### Concept
+A weather widget on the dashboard screen showing real-time weather data for the user's location.
+
+#### UI Elements
+- **Dashboard widget** — compact card below status cards
+- **Current temperature** — large numeric display (°C/°F)
+- **Weather condition icon** — sun, cloud, rain, snow, etc.
+- **Humidity percentage** — small text below temperature
+- **Optional 1-day forecast** — high/low temps for tomorrow
+
+#### Data Source Candidates
+| Source | Free Tier | API Key | Notes |
+|--------|-----------|---------|-------|
+| wttr.in | Unlimited | No | Simple HTTP, no auth, format=json |
+| OpenWeatherMap | 1000 calls/day | Yes | More reliable, structured data |
+
+**Recommendation:** Start with `wttr.in` (no API key needed), migrate to OpenWeatherMap if rate limits are hit.
+
+#### Refresh Behavior
+- **Interval:** Every 30 minutes (configurable)
+- **Trigger:** On boot + time-based interval
+- **Storage:** Cache last response in LittleFS (`/weather.json`)
+
+#### Offline Behavior
+- Show last cached data with a "stale" indicator (grayed out or timestamp)
+- If no cache exists, show "--°" placeholder
+- Do NOT block boot or other services while fetching weather
+
+#### Firmware Impact Estimate
+| Component | Change | Flash | RAM |
+|-----------|--------|-------|-----|
+| New `weather_service` | HTTP GET + JSON parse | +8KB | +3KB |
+| New `weather_repo` | LittleFS cache read/write | +2KB | +1KB |
+| Dashboard renderer | Widget drawing | +3KB | +1KB |
+| WiFi service | Shared connection | Same | Same |
+| **Total** | | **+13KB** | **+5KB** |
+
+#### API Endpoints (Future)
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/weather` | Get cached weather data |
+| POST | `/api/weather` | Force refresh weather |
+| GET | `/api/weather?location=City` | Set location and refresh |
+
+#### Dependencies
+- WiFi connection (already implemented)
+- HTTP client (ESP32 HTTPClient library)
+- JSON parsing (ArduinoJson — already used)
+- LittleFS (already used for repositories)
+
+#### Open Questions
+1. GPS vs city name for location? (GPS = more accurate, city = simpler)
+2. Fahrenheit or Celsius? (configurable in settings?)
+3. Weather icon set — custom TFT sprites or simple text?
+
 ---
 
 ## 5. Implementation Rules
@@ -130,7 +189,7 @@
 2. Add OTA updates for easy firmware updates
 3. Add MQTT for home automation integration
 4. Add multiple clock faces (customizable)
-5. Add weather display (WiFi + API)
+5. Add weather display (WiFi + API) — see Phase 10 design notes
 6. Add pomodoro timer
 7. Add music player (SD card)
 8. Add ambient light sensor (auto-brightness)
