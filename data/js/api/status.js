@@ -17,6 +17,7 @@ export const statusApi = {
     if (d.sound) store.set('sound', d.sound);
     if (d.wifi) store.set('wifi', d.wifi);
     if (d.device) store.set('device', d.device);
+    if (d.weather) store.set('weather', d.weather);
     return d;
   }
 };
