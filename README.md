@@ -1,4 +1,4 @@
-# PIFKID 2026 — Smart Desk Clock
+#  Smart Desk Clock
 
 An ESP32-based smart desk clock with TFT display, rotary encoder, WiFi, alarms, todos, and schedule management. Features a full REST API and a single-page web application for configuration.
 
