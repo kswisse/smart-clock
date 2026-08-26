@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <AsyncWebServer.h>
+#include "../models/models.h"
 
 class TodoHandlers {
 public:

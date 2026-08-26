@@ -1,5 +1,13 @@
+function detectMode() {
+  const h = location.hostname;
+  if (h === '192.168.4.1' || h === 'clock.local' || h === 'localhost') {
+    return h === 'localhost' ? 'demo' : 'esp32';
+  }
+  return 'demo';
+}
+
 export const CONFIG = {
-  MODE: 'demo', // 'demo' or 'esp32'
+  MODE: detectMode(),
   API_BASE: '',
   API_TIMEOUT: 5000,
   API_RETRY: 1,
@@ -46,6 +54,7 @@ export const CONFIG = {
     SOUND: '/api/sound',
     WIFI: '/api/wifi',
     DEVICE: '/api/device',
+    SYNC: '/api/sync',
     WEATHER: '/api/weather'
   },
   COLORS: [

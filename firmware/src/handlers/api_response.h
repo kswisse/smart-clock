@@ -14,6 +14,7 @@ public:
   // Convenience methods
   static void ok(AsyncWebServerRequest* request, const char* message, const char* dataJson = nullptr);
   static void ok(AsyncWebServerRequest* request, const char* message, JsonDocument& data);
+  static void created(AsyncWebServerRequest* request, const char* message, const char* dataJson = nullptr);
   static void created(AsyncWebServerRequest* request, const char* message, JsonDocument* data = nullptr);
   static void badRequest(AsyncWebServerRequest* request, const char* message = "Bad request");
   static void notFound(AsyncWebServerRequest* request, const char* message = "Not found");

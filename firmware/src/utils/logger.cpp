@@ -93,7 +93,7 @@ size_t Logger::getHeapSize() {
 }
 
 float Logger::getHeapFragmentation() {
-  return ESP.getHeapFragmentation();
+  return 0.0f;
 }
 
 void Logger::_log(LogLevel level, const char* tag, const char* fmt, va_list args) {

@@ -8,7 +8,7 @@
 WifiService wifiService;
 
 // ── WiFi Event Callback (ISR-safe) ─────────────────────────────
-static void wifiEventCallback(system_event_id_t event) {
+static void wifiEventCallback(arduino_event_id_t event) {
   wifiService._onWifiEvent(event);
 }
 
@@ -22,6 +22,7 @@ void WifiService::begin() {
   _retryCount = 0;
   _staSSID[0] = '\0';
   _staPassword[0] = '\0';
+  _lastActivityMs = 0;
 
   _status.connected = false;
   _status.ssid = "";
@@ -51,7 +52,35 @@ bool WifiService::beginAP() {
   _updateStatus();
 
   logger.info("WIFI", "AP started, IP: %s", getIP().c_str());
+  _lastActivityMs = millis();
   return true;
+}
+
+void WifiService::stopAP() {
+  if (!_apMode) return;
+
+  logger.info("WIFI", "Stopping AP mode");
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_STA);
+  _apMode = false;
+  _setState(WIFI_IDLE);
+  _status.connected = false;
+  _status.ssid = "";
+  _status.ip = "";
+  _lastActivityMs = 0;
+}
+
+bool WifiService::isAPActive() {
+  return _apMode;
+}
+
+void WifiService::touchActivity() {
+  _lastActivityMs = millis();
+}
+
+bool WifiService::isAPTimeout() {
+  if (!_apMode || _lastActivityMs == 0) return false;
+  return (millis() - _lastActivityMs) >= WIFI_AP_TIMEOUT_MS;
 }
 
 void WifiService::startConnectSTA(const char* ssid, const char* password) {
@@ -117,6 +146,13 @@ void WifiService::scan() {
 
 void WifiService::handleEvents() {
   unsigned long now = millis();
+
+  // Check AP inactivity timeout
+  if (isAPTimeout()) {
+    logger.info("WIFI", "AP inactivity timeout, stopping AP");
+    stopAP();
+    return;
+  }
 
   // Periodic status check
   if (now - _lastStatusCheck >= WIFI_STATUS_CHECK_MS) {
@@ -217,15 +253,15 @@ void WifiService::_handleReconnecting() {
 
 // ── Event Handler (called from WiFi task) ──────────────────────
 
-void WifiService::_onWifiEvent(system_event_id_t event) {
+void WifiService::_onWifiEvent(arduino_event_id_t event) {
   // Note: This runs in WiFi task context, not Arduino loop
   // Only set flags, don't do heavy work here
   switch (event) {
-    case SYSTEM_EVENT_STA_GOT_IP:
+    case ARDUINO_EVENT_WIFI_STA_GOT_IP:
       // Will be detected in handleEvents() via WiFi.status()
       break;
 
-    case SYSTEM_EVENT_STA_DISCONNECTED:
+    case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
       // Will be detected in handleEvents() via WiFi.status()
       break;
 

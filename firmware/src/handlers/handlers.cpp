@@ -14,6 +14,7 @@
 Handlers handlers;
 
 void Handlers::handleStatus(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   DynamicJsonDocument doc(JSON_DOC_STATUS);
 
   // Device status
@@ -67,6 +68,7 @@ void Handlers::handleStatus(AsyncWebServerRequest* request) {
 }
 
 void Handlers::handleTimeGet(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   TimeInfo time = timeService.getTime();
   StaticJsonDocument<256> doc;
   doc["current"] = time.current;
@@ -81,6 +83,7 @@ void Handlers::handleTimeGet(AsyncWebServerRequest* request) {
 }
 
 void Handlers::handleTimePost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return; // Wait for complete body
 
   char body[512];
@@ -99,13 +102,16 @@ void Handlers::handleTimePost(AsyncWebServerRequest* request, uint8_t* data, siz
 // ── Display Settings ──────────────────────────────────────────
 
 void Handlers::handleDisplayGet(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   DisplaySettings display = configRepo.display();
   StaticJsonDocument<256> doc;
-  display.toJson(doc);
+  JsonObject dsp = doc.to<JsonObject>();
+  display.toJson(dsp);
   ApiResponse::ok(request, "Display settings retrieved", doc);
 }
 
 void Handlers::handleDisplayPost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -131,20 +137,24 @@ void Handlers::handleDisplayPost(AsyncWebServerRequest* request, uint8_t* data, 
   configRepo.save();
 
   StaticJsonDocument<256> resp;
-  display.toJson(resp);
+  JsonObject respObj = resp.to<JsonObject>();
+  display.toJson(respObj);
   ApiResponse::ok(request, "Display settings updated", resp);
 }
 
 // ── Sound Settings ────────────────────────────────────────────
 
 void Handlers::handleSoundGet(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   SoundSettings sound = configRepo.sound();
   StaticJsonDocument<128> doc;
-  sound.toJson(doc);
+  JsonObject snd = doc.to<JsonObject>();
+  sound.toJson(snd);
   ApiResponse::ok(request, "Sound settings retrieved", doc);
 }
 
 void Handlers::handleSoundPost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -167,13 +177,15 @@ void Handlers::handleSoundPost(AsyncWebServerRequest* request, uint8_t* data, si
   configRepo.save();
 
   StaticJsonDocument<128> resp;
-  sound.toJson(resp);
+  JsonObject sndResp = resp.to<JsonObject>();
+  sound.toJson(sndResp);
   ApiResponse::ok(request, "Sound settings updated", resp);
 }
 
 // ── WiFi Management ──────────────────────────────────────────
 
 void Handlers::handleWifiGet(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   if (request->hasParam("scan")) {
     // Scan for networks and return wrapped in { networks: [...] }
     wifiService.scan();
@@ -206,6 +218,7 @@ void Handlers::handleWifiGet(AsyncWebServerRequest* request) {
 }
 
 void Handlers::handleWifiPost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -244,6 +257,7 @@ void Handlers::handleWifiPost(AsyncWebServerRequest* request, uint8_t* data, siz
 // ── Device Info ──────────────────────────────────────────────
 
 void Handlers::handleDeviceGet(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   SystemStatus device = statusService.getSystemStatus();
   StaticJsonDocument<256> doc;
   doc["firmware"] = device.firmware;

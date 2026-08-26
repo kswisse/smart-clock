@@ -102,5 +102,5 @@ size_t HAL::heapSize() {
 }
 
 float HAL::heapFragmentation() {
-  return ESP.getHeapFragmentation();
+  return 0.0f;
 }

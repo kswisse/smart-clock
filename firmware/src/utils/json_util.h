@@ -8,9 +8,9 @@ class JsonUtil {
 public:
   static bool parse(const char* json, StaticJsonDocument<512>& doc);
   static bool parse(const char* json, DynamicJsonDocument& doc);
-  static String stringify(StaticJsonDocumentBase& doc);
+  static String stringify(JsonDocument& doc);
   static String errorResponse(int code, const char* message);
-  static String successResponse(const char* message, StaticJsonDocumentBase* data = nullptr);
+  static String successResponse(const char* message, JsonDocument* data = nullptr);
   static String wrapResponse(bool success, int code, const char* message, const char* dataJson = nullptr);
 };
 

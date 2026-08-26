@@ -6,27 +6,29 @@
 #include "../handlers/todo_handlers.h"
 #include "../handlers/alarm_handlers.h"
 #include "../handlers/schedule_handlers.h"
+#include "../handlers/sync_handler.h"
 #include "../handlers/api_response.h"
 #include "../utils/logger.h"
+#include "../services/wifi_service.h"
 #include <LittleFS.h>
 
-Server server;
+ClockServer clockServer;
 
-void Server::begin() {
+void ClockServer::begin() {
   _server = new AsyncWebServer(SERVER_PORT);
   _setupRoutes();
   _server->begin();
   logger.info("SERVER", "Started on port %d", SERVER_PORT);
 }
 
-void Server::handleClient() {
+void ClockServer::handleClient() {
 }
 
-AsyncWebServer* Server::getServer() {
+AsyncWebServer* ClockServer::getServer() {
   return _server;
 }
 
-void Server::_setupRoutes() {
+void ClockServer::_setupRoutes() {
   // ── System API ───────────────────────────────────────────────
   _server->on("/api/status", HTTP_GET, [](AsyncWebServerRequest* r) {
     handlers.handleStatus(r);
@@ -160,6 +162,14 @@ void Server::_setupRoutes() {
     handlers.handleDeviceGet(r);
   });
 
+  // ── Sync API ────────────────────────────────────────────────
+  _server->on("/api/sync", HTTP_POST,
+    [](AsyncWebServerRequest* r) {}, NULL,
+    [](AsyncWebServerRequest* r, uint8_t* d, size_t l, size_t i, size_t t) {
+      syncHandler.handleSyncPost(r, d, l, i, t);
+    }
+  );
+
   // ── CORS ─────────────────────────────────────────────────────
   _server->on("/api/status", HTTP_OPTIONS, [](AsyncWebServerRequest* r) {
     ApiResponse::sendOptions(r);
@@ -186,6 +196,9 @@ void Server::_setupRoutes() {
     ApiResponse::sendOptions(r);
   });
   _server->on("/api/device", HTTP_OPTIONS, [](AsyncWebServerRequest* r) {
+    ApiResponse::sendOptions(r);
+  });
+  _server->on("/api/sync", HTTP_OPTIONS, [](AsyncWebServerRequest* r) {
     ApiResponse::sendOptions(r);
   });
 

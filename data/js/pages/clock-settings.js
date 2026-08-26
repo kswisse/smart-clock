@@ -1,6 +1,7 @@
 import { el, clearChildren } from '../utils/dom.js';
 import { store } from '../core/store.js';
 import { timeApi } from '../api/time.js';
+import { api } from '../api/client.js';
 import { showToast } from '../components/toast.js';
 import { createInput } from '../components/input.js';
 import { createSelect } from '../components/select.js';
@@ -23,6 +24,58 @@ const TIMEZONES = [
   { value: 'Asia/Kolkata', label: 'Mumbai (GMT+5:30)' },
   { value: 'Australia/Sydney', label: 'Sydney (GMT+10/+11)' }
 ];
+
+function createSyncBtn() {
+  const btn = el('button', {
+    class: 'btn btn-primary btn-block mt-sm',
+    text: 'Đồng bộ dữ liệu',
+    onClick: async () => {
+      btn.disabled = true;
+      btn.textContent = 'Đang đồng bộ...';
+
+      try {
+        const now = new Date();
+        const timeData = {
+          year: now.getFullYear(),
+          month: now.getMonth() + 1,
+          day: now.getDate(),
+          hour: now.getHours(),
+          minute: now.getMinutes(),
+          second: now.getSeconds(),
+          timezone: 'Asia/Ho_Chi_Minh'
+        };
+
+        const todos = (store.get('todos') || []).map(t => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
+          color: t.color,
+          completed: t.completed,
+          created_at: t.created_at || t.createdAt || 0
+        }));
+
+        const alarms = (store.get('alarms') || []).map(a => ({
+          id: a.id,
+          hour: a.hour,
+          minute: a.minute,
+          repeat: a.repeat || [],
+          enabled: a.enabled,
+          sound: a.sound,
+          volume: a.volume
+        }));
+
+        await api.sync({ time: timeData, todos, alarms });
+        showToast('Đồng bộ thành công', 'success');
+      } catch (e) {
+        showToast('Đồng bộ thất bại: ' + (e.message || 'Unknown error'), 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Đồng bộ dữ liệu';
+      }
+    }
+  });
+  return btn;
+}
 
 function render() {
   if (!container) return;
@@ -94,6 +147,13 @@ function render() {
         tzSelect,
         setBtn,
         syncBtn
+      ])
+    ]),
+    el('div', { class: 'card mt-md' }, [
+      el('div', { class: 'settings-group' }, [
+        el('div', { class: 'settings-group-title', text: 'Đồng bộ dữ liệu' }),
+        el('p', { class: 'settings-hint', text: 'Push all data (Time + Alarms + Todos) from this device to the clock.' }),
+        createSyncBtn()
       ])
     ])
   ]));

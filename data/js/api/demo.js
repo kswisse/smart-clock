@@ -186,6 +186,12 @@ function handlePost(endpoint, body) {
     case '/api/time':
       return makeResponse({ message: "Time updated" });
 
+    case '/api/sync':
+      if (body.todos) data.todos = body.todos;
+      if (body.alarms) data.alarms = body.alarms;
+      saveData(data);
+      return makeResponse({ todos_synced: (body.todos || []).length, alarms_synced: (body.alarms || []).length });
+
     case '/api/display':
       for (const key of ['brightness', 'autoDim', 'theme', 'timeout', 'animation']) {
         if (body[key] !== undefined) data.display[key] = body[key];

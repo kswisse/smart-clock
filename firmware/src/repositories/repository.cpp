@@ -75,13 +75,22 @@ bool Repository::writeJson(const char* path, JsonDocument& doc) {
 }
 
 void Repository::listDir(const char* dir, int levels) {
-  Dir root = LittleFS.openDir(dir);
-  while (root.next()) {
-    logger.debug("REPO", "%s/%s (%d bytes)", dir, root.fileName().c_str(), root.fileSize());
-    if (root.isDirectory() && levels > 0) {
-      String subPath = String(dir) + "/" + root.fileName();
+  File root = LittleFS.open(dir);
+  if (!root || !root.isDirectory()) return;
+  File entry = root.openNextFile();
+  while (entry) {
+    String name = String(entry.name());
+    // Remove leading / from ESP32 LittleFS names
+    if (name.startsWith("/")) name = name.substring(1);
+    // Remove directory prefix from name
+    int lastSlash = name.lastIndexOf('/');
+    if (lastSlash >= 0) name = name.substring(lastSlash + 1);
+    logger.debug("REPO", "%s/%s (%d bytes)", dir, name.c_str(), entry.size());
+    if (entry.isDirectory() && levels > 0) {
+      String subPath = String(dir) + "/" + name;
       listDir(subPath.c_str(), levels - 1);
     }
+    entry = root.openNextFile();
   }
 }
 

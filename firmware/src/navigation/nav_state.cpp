@@ -5,6 +5,7 @@
 #include "../hal/buttons_hal.h"
 #include "../events/event_bus.h"
 #include "../utils/logger.h"
+#include "../core/config.h"
 
 NavState navState;
 

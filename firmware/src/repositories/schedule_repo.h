@@ -10,6 +10,7 @@
 
 #define MAX_SCHEDULE_ENTRIES 100
 #define REPO_LOCK_TIMEOUT_MS 100
+#define FILE_SCHEDULE "/schedule.json"
 
 class ScheduleRepository {
 public:

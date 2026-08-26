@@ -4,18 +4,21 @@
 #include "api_response.h"
 #include "../models/models.h"
 #include "../services/alarm_service.h"
+#include "../services/wifi_service.h"
 #include "../core/config.h"
 #include <ArduinoJson.h>
 
 AlarmHandlers alarmHandlers;
 
 void AlarmHandlers::handleGetAll(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   auto alarms = alarmService.getAll();
   String json = _alarmsToJson(alarms);
   ApiResponse::ok(request, "Alarms retrieved", json.c_str());
 }
 
 void AlarmHandlers::handleGetById(AsyncWebServerRequest* request, uint16_t id) {
+  wifiService.touchActivity();
   Alarm alarm = alarmService.getById(id);
   if (alarm.id == 0) {
     ApiResponse::notFound(request, "Alarm not found");
@@ -26,6 +29,7 @@ void AlarmHandlers::handleGetById(AsyncWebServerRequest* request, uint16_t id) {
 }
 
 void AlarmHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -63,6 +67,7 @@ void AlarmHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* data, 
 }
 
 void AlarmHandlers::handleUpdate(AsyncWebServerRequest* request, uint16_t id, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -112,6 +117,7 @@ void AlarmHandlers::handleUpdate(AsyncWebServerRequest* request, uint16_t id, ui
 }
 
 void AlarmHandlers::handleDelete(AsyncWebServerRequest* request, uint16_t id) {
+  wifiService.touchActivity();
   bool ok = alarmService.remove(id);
   if (!ok) {
     ApiResponse::notFound(request, "Alarm not found");

@@ -47,6 +47,10 @@ void ApiResponse::ok(AsyncWebServerRequest* request, const char* message, JsonDo
   send(request, 200, true, message, data);
 }
 
+void ApiResponse::created(AsyncWebServerRequest* request, const char* message, const char* dataJson) {
+  send(request, 201, true, message, dataJson);
+}
+
 void ApiResponse::created(AsyncWebServerRequest* request, const char* message, JsonDocument* data) {
   if (data) {
     send(request, 201, true, message, *data);

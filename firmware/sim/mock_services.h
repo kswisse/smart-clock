@@ -60,6 +60,12 @@ public:
     return true;
   }
 
+  void stopAP() {
+    _status.state = WIFI_IDLE;
+    _apMode = false;
+    printf("[SIM] WiFi: AP stopped\n");
+  }
+
   void startConnectSTA(const char* ssid, const char* password) {
     _status.state = WIFI_STA_CONNECTING;
     _status.connectStartMs = millis();
@@ -91,7 +97,12 @@ public:
 
   WifiStatus getStatus() { return _status; }
   bool isConnected() { return _status.connected; }
+  bool isAPActive() { return _apMode; }
   String getIP() { return _status.ip; }
+
+  void touchActivity() {}
+  bool isAPTimeout() { return false; }
+
   WifiState getState() { return _status.state; }
   const char* getStateStr() {
     switch (_status.state) {

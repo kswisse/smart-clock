@@ -1,10 +1,10 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef CLOCK_SERVER_H
+#define CLOCK_SERVER_H
 
 #include <Arduino.h>
 #include <AsyncWebServer.h>
 
-class Server {
+class ClockServer {
 public:
   void begin();
   void handleClient();
@@ -14,9 +14,8 @@ private:
   AsyncWebServer* _server;
 
   void _setupRoutes();
-  void _setupCORS();
 };
 
-extern Server server;
+extern ClockServer clockServer;
 
-#endif // SERVER_H
+#endif // CLOCK_SERVER_H

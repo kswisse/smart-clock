@@ -36,12 +36,16 @@ String StringUtil::repeat(const String& str, int count) {
 
 String StringUtil::padLeft(const String& str, size_t len, char pad) {
   if (str.length() >= len) return str;
-  return String(pad).repeat(len - str.length()) + str;
+  String padding;
+  for (size_t i = 0; i < len - str.length(); i++) padding += pad;
+  return padding + str;
 }
 
 String StringUtil::padRight(const String& str, size_t len, char pad) {
   if (str.length() >= len) return str;
-  return str + String(pad).repeat(len - str.length());
+  String padding;
+  for (size_t i = 0; i < len - str.length(); i++) padding += pad;
+  return str + padding;
 }
 
 int StringUtil::indexOf(const String& str, const String& search, int start) {

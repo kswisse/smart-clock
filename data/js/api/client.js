@@ -77,6 +77,12 @@ class ApiClient {
     if (endpoint.startsWith('/api/display')) { cacheInvalidate('/api/status'); cacheInvalidate('/api/display'); }
     if (endpoint.startsWith('/api/sound')) { cacheInvalidate('/api/status'); cacheInvalidate('/api/sound'); }
     if (endpoint.startsWith('/api/wifi')) cacheInvalidate('/api/status');
+    if (endpoint === CONFIG.ENDPOINTS.SYNC) {
+      cacheInvalidate('/api/status');
+      cacheInvalidate('/api/todo');
+      cacheInvalidate('/api/alarm');
+      cacheInvalidate('/api/time');
+    }
   }
 
   get(endpoint, cacheTTL = 0, useCache = true) {
@@ -93,6 +99,10 @@ class ApiClient {
 
   delete(endpoint) {
     return this.request('DELETE', endpoint);
+  }
+
+  sync(payload) {
+    return this.request('POST', CONFIG.ENDPOINTS.SYNC, payload);
   }
 }
 

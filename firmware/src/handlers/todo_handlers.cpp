@@ -4,18 +4,21 @@
 #include "api_response.h"
 #include "../models/models.h"
 #include "../services/todo_service.h"
+#include "../services/wifi_service.h"
 #include "../core/config.h"
 #include <ArduinoJson.h>
 
 TodoHandlers todoHandlers;
 
 void TodoHandlers::handleGetAll(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   auto todos = todoService.getAll();
   String json = _todosToJson(todos);
   ApiResponse::ok(request, "Todos retrieved", json.c_str());
 }
 
 void TodoHandlers::handleGetById(AsyncWebServerRequest* request, uint16_t id) {
+  wifiService.touchActivity();
   Todo todo = todoService.getById(id);
   if (todo.id == 0) {
     ApiResponse::notFound(request, "Todo not found");
@@ -26,6 +29,7 @@ void TodoHandlers::handleGetById(AsyncWebServerRequest* request, uint16_t id) {
 }
 
 void TodoHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -54,6 +58,7 @@ void TodoHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* data, s
 }
 
 void TodoHandlers::handleUpdate(AsyncWebServerRequest* request, uint16_t id, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -98,6 +103,7 @@ void TodoHandlers::handleUpdate(AsyncWebServerRequest* request, uint16_t id, uin
 }
 
 void TodoHandlers::handleDelete(AsyncWebServerRequest* request, uint16_t id) {
+  wifiService.touchActivity();
   bool ok = todoService.remove(id);
   if (!ok) {
     ApiResponse::notFound(request, "Todo not found");

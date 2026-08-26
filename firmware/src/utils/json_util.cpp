@@ -19,7 +19,7 @@ bool JsonUtil::parse(const char* json, DynamicJsonDocument& doc) {
   return true;
 }
 
-String JsonUtil::stringify(StaticJsonDocumentBase& doc) {
+String JsonUtil::stringify(JsonDocument& doc) {
   String output;
   serializeJson(doc, output);
   return output;
@@ -50,7 +50,7 @@ String JsonUtil::errorResponse(int code, const char* message) {
   return wrapResponse(false, code, message);
 }
 
-String JsonUtil::successResponse(const char* message, StaticJsonDocumentBase* data) {
+String JsonUtil::successResponse(const char* message, JsonDocument* data) {
   if (data) {
     String dataStr = stringify(*data);
     return wrapResponse(true, 200, message, dataStr.c_str());

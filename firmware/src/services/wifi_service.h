@@ -42,13 +42,20 @@ class WifiService {
 public:
   void begin();
   bool beginAP();
+  void stopAP();
   void startConnectSTA(const char* ssid, const char* password);
   void disconnect();
   void scan();
   void handleEvents();
   WifiStatus getStatus();
+  void _onWifiEvent(arduino_event_id_t event);
   bool isConnected();
+  bool isAPActive();
   String getIP();
+
+  // Activity tracking for AP timeout
+  void touchActivity();
+  bool isAPTimeout();
 
   // JSON serialization
   String statusToJson();
@@ -70,6 +77,7 @@ private:
   bool _staConfigured;
   char _staSSID[64];
   char _staPassword[64];
+  unsigned long _lastActivityMs;
 
   void _setState(WifiState newState);
   void _updateStatus();
@@ -77,7 +85,6 @@ private:
   void _handleReconnecting();
   uint8_t _rssiToQuality(int32_t rssi);
   unsigned long _calculateBackoff();
-  void _onWifiEvent(system_event_id_t event);
 };
 
 extern WifiService wifiService;

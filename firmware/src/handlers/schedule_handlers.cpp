@@ -4,12 +4,14 @@
 #include "api_response.h"
 #include "../models/models.h"
 #include "../services/schedule_service.h"
+#include "../services/wifi_service.h"
 #include "../core/config.h"
 #include <ArduinoJson.h>
 
 ScheduleHandlers scheduleHandlers;
 
 void ScheduleHandlers::handleGetAll(AsyncWebServerRequest* request) {
+  wifiService.touchActivity();
   // Optional: ?day=0-6
   uint8_t day = 255;
   if (request->hasParam("day")) {
@@ -28,6 +30,7 @@ void ScheduleHandlers::handleGetAll(AsyncWebServerRequest* request) {
 }
 
 void ScheduleHandlers::handleGetById(AsyncWebServerRequest* request, uint16_t id) {
+  wifiService.touchActivity();
   ScheduleEntry entry = scheduleService.getById(id);
   if (entry.id == 0) {
     ApiResponse::notFound(request, "Entry not found");
@@ -38,6 +41,7 @@ void ScheduleHandlers::handleGetById(AsyncWebServerRequest* request, uint16_t id
 }
 
 void ScheduleHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -73,6 +77,7 @@ void ScheduleHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* dat
 }
 
 void ScheduleHandlers::handleUpdate(AsyncWebServerRequest* request, uint16_t id, uint8_t* data, size_t len, size_t index, size_t total) {
+  wifiService.touchActivity();
   if (index + len < total) return;
 
   char body[512];
@@ -105,6 +110,7 @@ void ScheduleHandlers::handleUpdate(AsyncWebServerRequest* request, uint16_t id,
 }
 
 void ScheduleHandlers::handleDelete(AsyncWebServerRequest* request, uint16_t id) {
+  wifiService.touchActivity();
   bool ok = scheduleService.remove(id);
   if (!ok) {
     ApiResponse::notFound(request, "Entry not found");

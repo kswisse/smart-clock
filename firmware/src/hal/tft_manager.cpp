@@ -1,6 +1,7 @@
 #include "tft_manager.h"
 
 #ifndef SIMULATION
+#include "../core/config.h"
 #include "display_hal.h"
 #include "tft_status_bar.h"
 #include "tft_clock.h"
