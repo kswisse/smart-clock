@@ -11,6 +11,7 @@ let container = null;
 let unsubscribers = [];
 
 const TIMEZONES = [
+  { value: 'Asia/Ho_Chi_Minh', label: 'Vietnam (GMT+7)' },
   { value: 'UTC', label: 'UTC (GMT+0)' },
   { value: 'Europe/London', label: 'London (GMT+0/+1)' },
   { value: 'Europe/Paris', label: 'Paris (GMT+1/+2)' },
@@ -86,7 +87,7 @@ function render() {
 
   let dateVal = time.date || new Date().toISOString().split('T')[0];
   let timeVal = time.current || '12:00';
-  let tzVal = time.timezone || 'UTC';
+  let tzVal = time.timezone || 'Asia/Ho_Chi_Minh';
 
   const dateInput = createInput({ label: 'Date', type: 'date', value: dateVal, onInput: v => dateVal = v });
   const timeInput = createInput({ label: 'Time (HH:MM)', type: 'time', value: timeVal, onInput: v => timeVal = v });

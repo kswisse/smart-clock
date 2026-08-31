@@ -203,7 +203,9 @@ void ClockServer::_setupRoutes() {
   });
 
   // ── Static Files ─────────────────────────────────────────────
-  _server->serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+  _server->serveStatic("/", LittleFS, "/")
+    .setDefaultFile("index.html")
+    .setCacheControl("no-cache");
   _server->onNotFound([](AsyncWebServerRequest* r) {
     handlers.handleNotFound(r);
   });

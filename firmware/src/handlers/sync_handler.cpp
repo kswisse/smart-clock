@@ -1,5 +1,6 @@
 #include "sync_handler.h"
 #include "api_response.h"
+#include "request_body.h"
 #include "../core/config.h"
 #include "../models/models.h"
 #include "../repositories/todo_repo.h"
@@ -13,12 +14,8 @@ SyncHandler syncHandler;
 
 void SyncHandler::handleSyncPost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
   wifiService.touchActivity();
-  if (index + len < total) return;
-
-  char body[4096];
-  size_t copyLen = min(len, sizeof(body) - 1);
-  memcpy(body, data, copyLen);
-  body[copyLen] = '\0';
+  const char* body = collect_request_body(request, data, len, index, total, JSON_DOC_LARGE);
+  if (!body) return;
 
   DynamicJsonDocument doc(JSON_DOC_LARGE);
   DeserializationError err = deserializeJson(doc, body);

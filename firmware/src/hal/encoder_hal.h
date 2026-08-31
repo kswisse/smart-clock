@@ -29,8 +29,7 @@ private:
   int32_t _lastDelta;
   unsigned long _lastMovementTime;
   uint8_t _acceleration;
-  uint8_t _lastPinA;
-  uint8_t _lastPinB;
+  uint16_t _lastPotBucket;
 
   // Button state
   bool _btnRaw;

@@ -8,17 +8,16 @@
 EncoderHAL encoderHal;
 
 void EncoderHAL::init() {
-  pinMode(PIN_ENCODER_A, INPUT_PULLUP);
-  pinMode(PIN_ENCODER_B, INPUT_PULLUP);
-  pinMode(PIN_ENCODER_BTN, INPUT_PULLUP);
+  pinMode(PIN_POTENTIOMETER, INPUT);
+  pinMode(PIN_CONTROL_BUTTON, INPUT_PULLUP);
+  analogReadResolution(12);
 
   _position = 0;
   _lastPosition = 0;
   _lastDelta = 0;
   _lastMovementTime = 0;
   _acceleration = 1;
-  _lastPinA = digitalRead(PIN_ENCODER_A);
-  _lastPinB = digitalRead(PIN_ENCODER_B);
+  _lastPotBucket = map(analogRead(PIN_POTENTIOMETER), 0, 4095, 0, POT_LOGICAL_STEPS);
 
   _btnRaw = false;
   _btnStable = false;
@@ -27,35 +26,25 @@ void EncoderHAL::init() {
   _btnPressStart = 0;
   _btnLastDebounce = 0;
 
-  logger.info("ENCODER", "Encoder init (A=%d B=%d BTN=%d)",
-              PIN_ENCODER_A, PIN_ENCODER_B, PIN_ENCODER_BTN);
+  logger.info("INPUT", "Potentiometer=%d, control button=%d",
+              PIN_POTENTIOMETER, PIN_CONTROL_BUTTON);
 }
 
 void EncoderHAL::update() {
   unsigned long now = millis();
 
-  // ── Rotary encoder reading ──
-  uint8_t pinA = digitalRead(PIN_ENCODER_A);
-  uint8_t pinB = digitalRead(PIN_ENCODER_B);
-
-  if (pinA != _lastPinA) {
-    int8_t direction = (pinA == pinB) ? 1 : -1;
-    _position += direction;
-
-    // Acceleration
-    unsigned long elapsed = now - _lastMovementTime;
-    if (elapsed < ENCODER_ACCEL_THRESHOLD) {
-      _acceleration = min((uint8_t)(_acceleration + 1), (uint8_t)ENCODER_ACCEL_MAX);
-    } else {
-      _acceleration = 1;
-    }
+  // Keep the old EncoderHAL interface, but source navigation from the
+  // potentiometer that exists in the schematic.
+  uint16_t bucket = map(analogRead(PIN_POTENTIOMETER), 0, 4095, 0, POT_LOGICAL_STEPS);
+  if (bucket != _lastPotBucket) {
+    _position += (int32_t)bucket - (int32_t)_lastPotBucket;
+    _acceleration = 1;
     _lastMovementTime = now;
+    _lastPotBucket = bucket;
   }
-  _lastPinA = pinA;
-  _lastPinB = pinB;
 
   // ── Button debounce ──
-  bool raw = digitalRead(PIN_ENCODER_BTN) == LOW;
+  bool raw = digitalRead(PIN_CONTROL_BUTTON) == LOW;
   if (raw != _btnRaw) {
     _btnLastDebounce = now;
   }

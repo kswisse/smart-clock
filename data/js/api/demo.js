@@ -66,7 +66,7 @@ function handleGet(endpoint) {
         time: {
           current: now.toTimeString().slice(0, 5),
           date: now.toISOString().slice(0, 10),
-          timezone: "UTC",
+          timezone: "Asia/Ho_Chi_Minh",
           mode: "ntp"
         },
         wifi: data.wifi,
@@ -83,7 +83,7 @@ function handleGet(endpoint) {
       return makeResponse({
         current: now.toTimeString().slice(0, 5),
         date: now.toISOString().slice(0, 10),
-        timezone: "UTC",
+        timezone: "Asia/Ho_Chi_Minh",
         mode: "ntp",
         hour: now.getHours(),
         minute: now.getMinutes(),

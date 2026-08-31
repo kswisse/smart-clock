@@ -2,6 +2,7 @@
 
 #ifndef SIMULATION
 #include "api_response.h"
+#include "request_body.h"
 #include "../models/models.h"
 #include "../services/schedule_service.h"
 #include "../services/wifi_service.h"
@@ -42,12 +43,8 @@ void ScheduleHandlers::handleGetById(AsyncWebServerRequest* request, uint16_t id
 
 void ScheduleHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
   wifiService.touchActivity();
-  if (index + len < total) return;
-
-  char body[512];
-  size_t copyLen = min(len, sizeof(body) - 1);
-  memcpy(body, data, copyLen);
-  body[copyLen] = '\0';
+  const char* body = collect_request_body(request, data, len, index, total, 512);
+  if (!body) return;
 
   StaticJsonDocument<512> doc;
   if (!deserializeJson(doc, body)) {
@@ -78,12 +75,8 @@ void ScheduleHandlers::handleCreate(AsyncWebServerRequest* request, uint8_t* dat
 
 void ScheduleHandlers::handleUpdate(AsyncWebServerRequest* request, uint16_t id, uint8_t* data, size_t len, size_t index, size_t total) {
   wifiService.touchActivity();
-  if (index + len < total) return;
-
-  char body[512];
-  size_t copyLen = min(len, sizeof(body) - 1);
-  memcpy(body, data, copyLen);
-  body[copyLen] = '\0';
+  const char* body = collect_request_body(request, data, len, index, total, 512);
+  if (!body) return;
 
   StaticJsonDocument<512> doc;
   if (!deserializeJson(doc, body)) {

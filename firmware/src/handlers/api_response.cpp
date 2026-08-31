@@ -4,16 +4,16 @@
 #include "../core/config.h"
 
 void ApiResponse::send(AsyncWebServerRequest* request, int code, bool success, const char* message, const char* dataJson) {
-  StaticJsonDocument<512> doc;
+  DynamicJsonDocument doc(JSON_DOC_LARGE);
   doc["success"] = success;
   doc["code"] = code;
   doc["message"] = message;
   doc["timestamp"] = millis();
 
   if (dataJson && strlen(dataJson) > 0) {
-    DynamicJsonDocument dataDoc(512);
+    DynamicJsonDocument dataDoc(JSON_DOC_LARGE);
     if (!deserializeJson(dataDoc, dataJson)) {
-      doc["data"] = dataDoc.as<JsonObject>();
+      doc["data"].set(dataDoc.as<JsonVariantConst>());
     } else {
       doc["data"] = JsonObject();
     }
@@ -27,12 +27,12 @@ void ApiResponse::send(AsyncWebServerRequest* request, int code, bool success, c
 }
 
 void ApiResponse::send(AsyncWebServerRequest* request, int code, bool success, const char* message, JsonDocument& data) {
-  StaticJsonDocument<512> doc;
+  DynamicJsonDocument doc(JSON_DOC_STATUS);
   doc["success"] = success;
   doc["code"] = code;
   doc["message"] = message;
   doc["timestamp"] = millis();
-  doc["data"] = data.as<JsonObject>();
+  doc["data"].set(data.as<JsonVariantConst>());
 
   String json;
   serializeJson(doc, json);

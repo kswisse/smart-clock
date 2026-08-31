@@ -1,8 +1,7 @@
 // ──────────────────────────────────────────────────────────────
 // PIFKID 2026 Smart Desk Clock - ESP32 Firmware
 // ──────────────────────────────────────────────────────────────
-// Board:    ESP32 Dev Module
-// Upload:   Sketch + LittleFS (Tools > ESP32 Sketch Data Upload)
+// Board:    ESP32-S3 DevKitC-1
 // Libraries:
 //   - ESPAsyncWebServer
 //   - AsyncTCP
@@ -18,11 +17,8 @@
 #include "src/hal/display_hal.h"
 #include "src/hal/speaker_hal.h"
 #include "src/hal/buttons_hal.h"
-#include "src/hal/tft_todo.h"
 #include "src/hal/encoder_hal.h"
 #include "src/hal/tft_manager.h"
-#include "src/hal/tft_status_bar.h"
-#include "src/hal/tft_clock.h"
 #include "src/navigation/nav_state.h"
 #include "src/services/speaker_service.h"
 #include "src/repositories/repository.h"
@@ -33,7 +29,6 @@
 #include "src/services/todo_service.h"
 #include "src/services/alarm_service.h"
 #include "src/services/schedule_service.h"
-#include "src/hal/tft_schedule.h"
 #include "src/server/server.h"
 
 // ── WiFi Toggle State ─────────────────────────────────────
@@ -62,8 +57,6 @@ void setup() {
   displayHAL.init();
   speakerHAL.init();
   buttonsHAL.init();
-  tftTodo.init();
-  tftSchedule.init();
   encoderHal.init();
   navState.init();
   tftManager.init();
@@ -81,7 +74,7 @@ void setup() {
   clockServer.begin();
 
   logger.info("BOOT", "───────────────────────────────────");
-  logger.info("BOOT", "  WiFi: OFF (press BTN1 3s to enable AP)");
+  logger.info("BOOT", "  WiFi: OFF (hold CONTROL 3s to enable AP)");
   logger.info("BOOT", "  AP SSID: %s", WIFI_AP_SSID);
   logger.info("BOOT", "  Web UI:  http://192.168.4.1");
   logger.info("BOOT", "───────────────────────────────────");
@@ -108,7 +101,7 @@ void loop() {
   HAL::ledBlink(1000);
 
   // ── WiFi Toggle: BTN1 long press (≥3s) ─────────────────────
-  ButtonState btn1 = buttonsHAL.getState(PIN_BUTTON_1);
+  ButtonState btn1 = buttonsHAL.getState(PIN_CONTROL_BUTTON);
   if (btn1.justPressed) {
     _btn1PressStart = millis();
   }
@@ -125,6 +118,12 @@ void loop() {
   if (btn1.justReleased) {
     _btn1PressStart = 0;
     _btn1WifiToggled = false;
+  }
+
+  // Dedicated hardware stop button always silences the active alarm.
+  ButtonState stopButton = buttonsHAL.getState(PIN_STOP_BUTTON);
+  if (stopButton.justPressed) {
+    eventBus.emit(EVT_SOUND_CHANGED, 0, "stop");
   }
 }
 

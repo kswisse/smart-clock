@@ -2,9 +2,8 @@
 
 #ifndef SIMULATION
 #include "api_response.h"
+#include "request_body.h"
 #include "../core/config.h"
-#include "../core/firmware_info.h"
-#include "../repositories/repository.h"
 #include "../repositories/config_repo.h"
 #include "../services/status_service.h"
 #include "../services/time_service.h"
@@ -53,11 +52,6 @@ void Handlers::handleStatus(AsyncWebServerRequest* request) {
   JsonObject snd = doc.createNestedObject("sound");
   sound.toJson(snd);
 
-  // Empty collections (for future features)
-  doc.createNestedArray("todos");
-  doc.createNestedArray("alarms");
-  doc.createNestedArray("schedule");
-
   // Firmware metadata
   JsonObject fw = doc.createNestedObject("firmware");
   fw["version"] = FW_VERSION;
@@ -84,12 +78,8 @@ void Handlers::handleTimeGet(AsyncWebServerRequest* request) {
 
 void Handlers::handleTimePost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
   wifiService.touchActivity();
-  if (index + len < total) return; // Wait for complete body
-
-  char body[512];
-  size_t copyLen = min(len, sizeof(body) - 1);
-  memcpy(body, data, copyLen);
-  body[copyLen] = '\0';
+  const char* body = collect_request_body(request, data, len, index, total, 512);
+  if (!body) return;
 
   bool success = timeService.setTimeFromJson(body);
   if (success) {
@@ -112,12 +102,8 @@ void Handlers::handleDisplayGet(AsyncWebServerRequest* request) {
 
 void Handlers::handleDisplayPost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
   wifiService.touchActivity();
-  if (index + len < total) return;
-
-  char body[512];
-  size_t copyLen = min(len, sizeof(body) - 1);
-  memcpy(body, data, copyLen);
-  body[copyLen] = '\0';
+  const char* body = collect_request_body(request, data, len, index, total, 512);
+  if (!body) return;
 
   DynamicJsonDocument doc(512);
   DeserializationError err = deserializeJson(doc, body);
@@ -155,12 +141,8 @@ void Handlers::handleSoundGet(AsyncWebServerRequest* request) {
 
 void Handlers::handleSoundPost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
   wifiService.touchActivity();
-  if (index + len < total) return;
-
-  char body[512];
-  size_t copyLen = min(len, sizeof(body) - 1);
-  memcpy(body, data, copyLen);
-  body[copyLen] = '\0';
+  const char* body = collect_request_body(request, data, len, index, total, 512);
+  if (!body) return;
 
   DynamicJsonDocument doc(512);
   DeserializationError err = deserializeJson(doc, body);
@@ -219,12 +201,8 @@ void Handlers::handleWifiGet(AsyncWebServerRequest* request) {
 
 void Handlers::handleWifiPost(AsyncWebServerRequest* request, uint8_t* data, size_t len, size_t index, size_t total) {
   wifiService.touchActivity();
-  if (index + len < total) return;
-
-  char body[512];
-  size_t copyLen = min(len, sizeof(body) - 1);
-  memcpy(body, data, copyLen);
-  body[copyLen] = '\0';
+  const char* body = collect_request_body(request, data, len, index, total, 512);
+  if (!body) return;
 
   DynamicJsonDocument doc(512);
   DeserializationError err = deserializeJson(doc, body);
@@ -267,44 +245,6 @@ void Handlers::handleDeviceGet(AsyncWebServerRequest* request) {
   doc["mac"] = device.macAddress;
   doc["battery"] = device.batteryPercent;
   ApiResponse::ok(request, "Device info retrieved", doc);
-}
-
-void Handlers::handleStaticFile(AsyncWebServerRequest* request) {
-  String path = request->url();
-  if (path == "/") path = PATH_INDEX;
-
-  if (!repository.exists(path.c_str())) {
-    if (!path.endsWith(".html") && !path.endsWith(".css") &&
-        !path.endsWith(".js") && !path.endsWith(".svg") &&
-        !path.endsWith(".json")) {
-      path += ".html";
-    }
-  }
-
-  if (!repository.exists(path.c_str())) {
-    handleNotFound(request);
-    return;
-  }
-
-  String content;
-  if (!repository.read(path.c_str(), content)) {
-    ApiResponse::serverError(request, "Failed to read file");
-    return;
-  }
-
-  String mimeType = "application/octet-stream";
-  if (path.endsWith(".html")) mimeType = MIME_HTML;
-  else if (path.endsWith(".css")) mimeType = MIME_CSS;
-  else if (path.endsWith(".js")) mimeType = MIME_JS;
-  else if (path.endsWith(".svg")) mimeType = MIME_SVG;
-  else if (path.endsWith(".json")) mimeType = MIME_JSON;
-  else if (path.endsWith(".png")) mimeType = MIME_PNG;
-  else if (path.endsWith(".ico")) mimeType = MIME_ICO;
-
-  AsyncWebServerResponse* response = request->beginResponse(200, mimeType, content);
-  response->addHeader("Cache-Control", "public, max-age=3600");
-  response->addHeader("Access-Control-Allow-Origin", "*");
-  request->send(response);
 }
 
 void Handlers::handleNotFound(AsyncWebServerRequest* request) {

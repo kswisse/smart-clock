@@ -1,6 +1,8 @@
 function detectMode() {
+  const requested = new URLSearchParams(location.search).get('mode');
+  if (requested === 'demo' || requested === 'device') return requested;
   const h = location.hostname;
-  if (h === '192.168.4.1' || h === 'clock.local' || h === 'localhost') {
+  if (h === '192.168.4.1' || h === 'clock.local' || h === 'pifkid.local' || h === 'localhost') {
     return h === 'localhost' ? 'demo' : 'esp32';
   }
   return 'demo';

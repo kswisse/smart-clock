@@ -1,47 +1,15 @@
-# Firmware
+# Firmware bridge
 
-ESP32 firmware for the PIFKID 2026 Smart Desk Clock.
-
-## Quick Start
+Firmware PlatformIO cho ESP32-S3, dùng pin từ schematic của project chính.
 
 ```bash
-# Install PlatformIO
-pip install platformio
-
-# Compile for ESP32
-pio run -e esp32
-
-# Upload firmware
-pio run -e esp32 --target upload
-
-# Upload web UI (LittleFS)
-pio run -e esp32 --target uploadfs
-
-# Run simulation tests
-pio run -e simulation
-.pio/build/simulation/program.exe
+pio run -e esp32_s3
+pio run -e esp32_s3 -t upload
+pio run -e esp32_s3 -t uploadfs
+pio device monitor -b 115200
 ```
 
-## Structure
+`uploadfs` lấy dữ liệu trực tiếp từ thư mục `../data` nhờ `data_dir` trong `platformio.ini`.
 
-| Directory | Purpose |
-|-----------|---------|
-| `src/` | Production firmware source |
-| `sim/` | Desktop simulation harness |
-| `sim/tests/` | Functional verification tests |
-| `docs/` | Firmware documentation |
-
-## Architecture
-
-See [AGENTS.md](../AGENTS.md) for the complete architecture reference.
-
-## Simulation
-
-The desktop simulation validates firmware logic without hardware. Run:
-
-```bash
-pio run -e simulation
-.pio/build/simulation/program.exe
-```
-
-This runs 179 tests across 8 test suites covering all core functionality.
+Luồng khởi động: HAL → LittleFS → TFT/input → WiFi → DS3231/NTP → service → REST server.
+WiFi AP mặc định tắt; giữ nút CONTROL 3 giây để bật. Nút STOP luôn tắt âm báo.

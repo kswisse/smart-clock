@@ -5,6 +5,8 @@
 #include "../repositories/config_repo.h"
 #include "../utils/logger.h"
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include <sys/time.h>
 
 TimeService timeService;
 
@@ -13,7 +15,22 @@ bool TimeService::beginNTP(const char* server, long gmtOffset, int daylightOffse
 
   _lastNtpSync = 0;
   _wasSynced = false;
+  _last_rtc_write = 0;
   memset(_savedTimezone, 0, sizeof(_savedTimezone));
+  strncpy(_timezone, "Asia/Ho_Chi_Minh", sizeof(_timezone) - 1);
+
+  Wire.begin(PIN_RTC_SDA, PIN_RTC_SCL);
+  _rtc_available = _rtc.begin();
+  if (_rtc_available) {
+    if (_rtc.lostPower()) {
+      logger.warn("TIME", "DS3231 lost power; waiting for manual time or NTP");
+    } else {
+      _load_from_rtc();
+      logger.info("TIME", "System clock restored from DS3231");
+    }
+  } else {
+    logger.warn("TIME", "DS3231 not detected on SDA=%d SCL=%d", PIN_RTC_SDA, PIN_RTC_SCL);
+  }
 
   configTime(gmtOffset, daylightOffset, server, NTP_SERVER_2);
   _ntpActive = true;
@@ -44,6 +61,9 @@ void TimeService::setManual(int year, int month, int day, int hour, int minute, 
   struct timeval tv = { .tv_sec = epoch };
   settimeofday(&tv, NULL);
 
+  _timeinfo = t;
+  _write_rtc(t);
+
   _ntpActive = false;
   _manualMode = true;
   strncpy(_info.mode, "manual", sizeof(_info.mode));
@@ -68,7 +88,8 @@ void TimeService::setMode(const char* mode) {
 }
 
 void TimeService::setTimezone(const char* tz) {
-  strncpy(_timezone, tz, sizeof(_timezone));
+  strncpy(_timezone, tz, sizeof(_timezone) - 1);
+  _timezone[sizeof(_timezone) - 1] = '\0';
   logger.info("TIME", "Timezone: %s", tz);
 }
 
@@ -141,12 +162,16 @@ bool TimeService::setTimeFromJson(const char* json) {
 }
 
 void TimeService::_refreshTime() {
-  if (!_manualMode) {
-    if (!getLocalTime(&_timeinfo, 100)) {
-      return;
-    }
+  if (!getLocalTime(&_timeinfo, 100)) {
+    if (!_load_from_rtc() || !getLocalTime(&_timeinfo, 100)) return;
+  }
+
+  if (!_manualMode && getUnixTime() > 1704067200UL) {
     _wasSynced = true;
     _lastNtpSync = millis();
+    if (_rtc_available && (millis() - _last_rtc_write > 21600000UL)) {
+      _write_rtc(_timeinfo);
+    }
   }
 
   _info.hour = _timeinfo.tm_hour;
@@ -172,6 +197,25 @@ String TimeService::_formatTime(int hour, int minute) {
   char buf[8];
   snprintf(buf, sizeof(buf), "%02d:%02d", hour, minute);
   return String(buf);
+}
+
+bool TimeService::_load_from_rtc() {
+  if (!_rtc_available) return false;
+  DateTime now = _rtc.now();
+  if (now.year() < 2024) return false;
+
+  // The DS3231 stores Vietnam local time. Convert it to UTC epoch before
+  // letting configTime apply the fixed UTC+7 offset.
+  struct timeval tv = { .tv_sec = (time_t)now.unixtime() - GMT_OFFSET_SEC, .tv_usec = 0 };
+  settimeofday(&tv, nullptr);
+  return true;
+}
+
+void TimeService::_write_rtc(const struct tm& value) {
+  if (!_rtc_available) return;
+  _rtc.adjust(DateTime(value.tm_year + 1900, value.tm_mon + 1, value.tm_mday,
+                       value.tm_hour, value.tm_min, value.tm_sec));
+  _last_rtc_write = millis();
 }
 
 unsigned long TimeService::getUnixTime() {

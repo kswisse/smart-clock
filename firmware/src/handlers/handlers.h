@@ -26,9 +26,6 @@ public:
   // Device info
   void handleDeviceGet(AsyncWebServerRequest* request);
 
-  // Static file serving
-  void handleStaticFile(AsyncWebServerRequest* request);
-
   // Error handlers
   void handleNotFound(AsyncWebServerRequest* request);
 

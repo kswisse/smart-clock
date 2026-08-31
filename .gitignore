@@ -68,7 +68,7 @@ dist/
 
 # ── Unrelated Sub-Projects ───────────────────────────────────
 # These are independent projects not part of PIFKID
-core/
+/core/
 experiments/
 repo/
 archive/

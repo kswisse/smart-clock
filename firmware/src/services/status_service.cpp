@@ -1,6 +1,5 @@
 #include "status_service.h"
 #include "../core/config.h"
-#include "../core/firmware_info.h"
 #include "../hal/hal.h"
 #include "../utils/logger.h"
 #include <WiFi.h>

@@ -7,13 +7,13 @@ bool HAL::_ledState = false;
 unsigned long HAL::_buttonPressTime[3] = {0, 0, 0};
 
 void HAL::init() {
+  #ifdef PIN_LED_STATUS
   pinMode(PIN_LED_STATUS, OUTPUT);
+  #endif
   pinMode(PIN_BUTTON_1, INPUT_PULLUP);
   pinMode(PIN_BUTTON_2, INPUT_PULLUP);
 
-  // Encoder pins (encoder button handled exclusively by EncoderHAL)
-  pinMode(PIN_ENCODER_A, INPUT_PULLUP);
-  pinMode(PIN_ENCODER_B, INPUT_PULLUP);
+  pinMode(PIN_POTENTIOMETER, INPUT);
 
   #ifdef PIN_BATTERY_ADC
   analogReadResolution(12);
@@ -32,23 +32,33 @@ void HAL::update() {
 }
 
 void HAL::ledOn() {
+  #ifdef PIN_LED_STATUS
   digitalWrite(PIN_LED_STATUS, HIGH);
+  #endif
 }
 
 void HAL::ledOff() {
+  #ifdef PIN_LED_STATUS
   digitalWrite(PIN_LED_STATUS, LOW);
+  #endif
 }
 
 void HAL::ledToggle() {
+  #ifdef PIN_LED_STATUS
   _ledState = !_ledState;
   digitalWrite(PIN_LED_STATUS, _ledState ? HIGH : LOW);
+  #endif
 }
 
 void HAL::ledBlink(uint16_t intervalMs) {
+  #ifdef PIN_LED_STATUS
   if (millis() - _lastLedBlink >= intervalMs) {
     ledToggle();
     _lastLedBlink = millis();
   }
+  #else
+  (void)intervalMs;
+  #endif
 }
 
 float HAL::batteryVoltage() {

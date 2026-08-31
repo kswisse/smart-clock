@@ -1,37 +1,11 @@
 # Web UI
 
-Single-page application served from the ESP32's LittleFS storage.
+SPA không cần bundler, được nạp nguyên thư mục vào LittleFS.
 
-## Structure
+- `js/core/`: bootstrap, router, state và config.
+- `js/api/`: adapter REST API/demo.
+- `js/pages/`: các màn hình.
+- `js/components/`: UI dùng lại.
 
-| Directory | Purpose |
-|-----------|---------|
-| `js/api/` | API client modules (one per endpoint group) |
-| `js/components/` | Reusable UI components |
-| `js/core/` | App bootstrap, router, state store |
-| `js/pages/` | Page modules (one per screen) |
-| `js/state/` | Cache management |
-| `js/utils/` | DOM helpers, utilities |
-| `css/` | Stylesheets |
-| `icons/` | SVG icons |
-
-## Upload to ESP32
-
-Upload the entire `data/` folder to LittleFS:
-
-```bash
-# PlatformIO
-pio run -e esp32 --target uploadfs
-
-# Arduino IDE
-Tools > ESP32 Sketch Data Upload
-```
-
-## Access
-
-1. Connect to WiFi AP: `PIFKID-2026` (password: `12345678`)
-2. Open `http://192.168.4.1` in a browser
-
-## Pages
-
-Dashboard, Todo, Alarm, Schedule, Clock Settings, Display Settings, Sound Settings, WiFi, Device Info.
+Khi host là `192.168.4.1` hoặc `pifkid.local`, UI gọi API trên ESP32. Trên localhost/Vercel,
+UI dùng dữ liệu demo trong `localStorage`. Có thể ép mode bằng `?mode=device` hoặc `?mode=demo`.

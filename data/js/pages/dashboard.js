@@ -1,8 +1,10 @@
 import { el, clearChildren } from '../utils/dom.js';
 import { store } from '../core/store.js';
 import { statusApi } from '../api/status.js';
+import { todoApi } from '../api/todo.js';
+import { alarmApi } from '../api/alarm.js';
+import { scheduleApi } from '../api/schedule.js';
 import { timeApi } from '../api/time.js';
-import { weatherApi } from '../api/weather.js';
 import { showToast } from '../components/toast.js';
 import { router } from '../core/router.js';
 
@@ -251,8 +253,12 @@ function render() {
 
 async function load() {
   try {
-    await statusApi.get();
-    await weatherApi.get();
+    await Promise.all([
+      statusApi.get(),
+      todoApi.getAll(),
+      alarmApi.getAll(),
+      scheduleApi.getAll()
+    ]);
   } catch (e) {
     showToast('Failed to load status', 'error');
   }

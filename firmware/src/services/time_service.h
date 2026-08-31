@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <time.h>
+#include <RTClib.h>
 
 #ifndef SIMULATION
 struct TimeInfo {
@@ -49,8 +50,13 @@ private:
   unsigned long _lastNtpSync;
   bool _wasSynced;
   char _savedTimezone[64];
+  RTC_DS3231 _rtc;
+  bool _rtc_available;
+  unsigned long _last_rtc_write;
 
   void _refreshTime();
+  bool _load_from_rtc();
+  void _write_rtc(const struct tm& value);
   String _formatDate(int year, int month, int day);
   String _formatTime(int hour, int minute);
 };
