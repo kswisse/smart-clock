@@ -1,5 +1,8 @@
 #  Smart Desk Clock
 
+[![CI](https://github.com/kswisse/smart-clock/actions/workflows/ci.yml/badge.svg)](https://github.com/kswisse/smart-clock/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 An ESP32-based smart desk clock with TFT display, rotary encoder, WiFi, alarms, todos, and schedule management. Features a full REST API and a single-page web application for configuration.
 
 **Status:** MVP v1.0 — Hardware Bring-up Ready  
@@ -236,9 +239,13 @@ The web UI is a single-page application served from the ESP32's LittleFS:
 
 ## Screenshots
 
-<!-- Add screenshots here -->
+### Web UI — Dashboard
 
-*Coming soon after hardware validation.*
+![Web UI dashboard](docs/screenshots/webui-dashboard.png)
+
+Hosted demo: https://data-smoky-ten.vercel.app/
+
+*TFT firmware screenshots will be added after hardware bring-up.*
 
 ---
 
