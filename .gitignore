@@ -68,10 +68,11 @@ dist/
 
 # ── Unrelated Sub-Projects ───────────────────────────────────
 # These are independent projects not part of PIFKID
-core/
-experiments/
-repo/
-archive/
+# (root-anchored so firmware/src/core/ is NOT ignored)
+/core/
+/experiments/
+/repo/
+/archive/
 
 # ── Root-level leftovers ─────────────────────────────────────
 # Keep only PIFKID-related files at root

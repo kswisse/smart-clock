@@ -120,6 +120,12 @@ std::vector<std::string> listDir(const char* dir) {
   return entries;
 }
 
+bool isDir(const char* path) {
+  std::string fullPath = std::string(SIM_FS_ROOT) + path;
+  std::error_code ec;
+  return fs::is_directory(fullPath, ec);
+}
+
 bool format() {
   try {
     fs::remove_all(SIM_FS_ROOT);

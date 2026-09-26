@@ -24,6 +24,7 @@ namespace littlefs_impl {
   size_t totalBytes();
   size_t usedBytes();
   std::vector<std::string> listDir(const char* dir);
+  bool isDir(const char* path);
   bool format();
 }
 
@@ -35,6 +36,12 @@ public:
     : _path(path), _valid(true), _writable(writable), _pos(0) {
     if (!writable) {
       _valid = littlefs_impl::readFile(path.c_str(), _content);
+    }
+  }
+  File(const std::string& path, bool writable, bool isDir)
+    : _path(path), _valid(true), _writable(writable), _pos(0), _isDir(isDir) {
+    if (isDir) {
+      _dirEntries = littlefs_impl::listDir(path.c_str());
     }
   }
   ~File() { close(); }
@@ -62,7 +69,20 @@ public:
     _valid = false;
   }
 
-  bool isDirectory() const { return false; }
+  bool isDirectory() const { return _isDir; }
+
+  const char* name() const { return _path.c_str(); }
+
+  File openNextFile() {
+    if (!_valid || !_isDir) return File();
+    if (_dirIndex >= _dirEntries.size()) return File();
+    std::string base = _dirEntries[_dirIndex++];
+    std::string prefix = _path;
+    if (!prefix.empty() && prefix.back() != '/') prefix += '/';
+    std::string child = prefix + base;
+    if (littlefs_impl::isDir(child.c_str())) return File(child, false, true);
+    return File(child, false);
+  }
 
 private:
   std::string _path;
@@ -70,6 +90,9 @@ private:
   bool _writable;
   size_t _pos = 0;
   std::string _content;
+  bool _isDir = false;
+  std::vector<std::string> _dirEntries;
+  size_t _dirIndex = 0;
 };
 
 // Arduino-compatible Dir mock
@@ -111,8 +134,9 @@ public:
   bool remove(const char* path) { return littlefs_impl::removeFile(path); }
   bool format() { return littlefs_impl::format(); }
 
-  File open(const char* path, const char* mode) {
+  File open(const char* path, const char* mode = "r") {
     bool writable = (mode[0] == 'w');
+    if (littlefs_impl::isDir(path)) return File(std::string(path), writable, true);
     return File(std::string(path), writable);
   }
 

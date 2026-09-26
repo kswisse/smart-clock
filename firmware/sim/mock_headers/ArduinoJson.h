@@ -3,6 +3,7 @@
 #ifdef SIMULATION
 
 #include <cstdint>
+#include <climits>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -72,7 +73,11 @@ public:
   uint8_t operator|(uint8_t d) const { return _type == INT ? (uint8_t)_intVal : d; }
   uint16_t operator|(uint16_t d) const { return _type == INT ? (uint16_t)_intVal : d; }
   uint32_t operator|(uint32_t d) const { return _type == INT ? (uint32_t)_intVal : d; }
+#if SIZE_MAX != ULONG_MAX
+  // size_t differs from unsigned long on this platform (e.g. Win64);
+  // on LP64 Linux size_t == unsigned long and this would be a redefinition.
   size_t operator|(size_t d) const { return _type == INT ? (size_t)_intVal : d; }
+#endif
   float operator|(float d) const { return _type == FLOAT ? _floatVal : d; }
   double operator|(double d) const { return _type == FLOAT ? (double)_floatVal : d; }
   const char* operator|(const char* d) const { return _type == STRING ? _strVal.c_str() : d; }
@@ -192,7 +197,10 @@ public:
   DynamicJsonDocument(size_t) {}
 };
 
-typedef DynamicJsonDocument JsonDocument;
+// JsonDocument is the shared base of both document types (mirrors real
+// ArduinoJson, where StaticJsonDocument and DynamicJsonDocument derive from
+// JsonDocument), so APIs taking JsonDocument& accept either one.
+typedef StaticJsonDocumentBase JsonDocument;
 
 bool deserializeJson(StaticJsonDocumentBase& doc, const char* json);
 bool deserializeJson(StaticJsonDocumentBase& doc, const String& json);

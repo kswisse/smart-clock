@@ -4,6 +4,7 @@
 #ifdef SIMULATION
 
 #include <cstdint>
+#include <climits>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -40,7 +41,11 @@ public:
   String(unsigned int value) : _buf(std::to_string(value)) {}
   String(long value) : _buf(std::to_string(value)) {}
   String(unsigned long value) : _buf(std::to_string(value)) {}
+#if SIZE_MAX != ULONG_MAX
+  // size_t differs from unsigned long on this platform (e.g. Win64);
+  // on LP64 Linux size_t == unsigned long and this would be a redefinition.
   String(size_t value) : _buf(std::to_string(value)) {}
+#endif
   String(float value) : _buf(std::to_string(value)) {}
   String(double value) : _buf(std::to_string(value)) {}
   String& operator=(const char* s) { _buf = s ? s : ""; return *this; }
@@ -52,6 +57,10 @@ public:
   bool isEmpty() const { return _buf.empty(); }
   int indexOf(const String& search, int start = 0) const {
     size_t pos = _buf.find(search._buf, start);
+    return (pos == std::string::npos) ? -1 : (int)pos;
+  }
+  int lastIndexOf(char c) const {
+    size_t pos = _buf.rfind(c);
     return (pos == std::string::npos) ? -1 : (int)pos;
   }
   String substring(int from, int to = -1) const {
